@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>LifeClock · 职业生涯时间计算器</title>
+<meta name="description" content="从参加工作日期推算退休时间，扣除工作、睡眠、通勤后，看看你这一生还剩下多少自由时间。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css?v=6" />
+</head>
+<body>
+<div class="ambient" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 7v5l3.5 2"></path>
+      </svg>
+    </span>
+    <div class="brand-text">
+      <h1>LifeClock</h1>
+      <p>把职业生涯换算成可以感知的时间</p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <a class="ghost-btn nav-work" href="/work.html" aria-label="打开上班鼓励器">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M13 2L4 14h6l-1 8 9-12h-6z"></path>
+      </svg>
+      <span class="btn-label">上班鼓励器</span>
+    </a>
+    <a class="ghost-btn nav-ledger" href="/ledger.html" aria-label="打开购买账本">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path>
+        <path d="M9 8h6M9 12h6"></path>
+      </svg>
+      <span class="btn-label">购买账本</span>
+    </a>
+    <button type="button" class="ghost-btn" id="resetBtn" aria-label="恢复默认参数">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 12a9 9 0 1 0 3-6.7"></path>
+        <path d="M3 4v5h5"></path>
+      </svg>
+      <span class="btn-label">恢复默认</span>
+    </button>
+  </div>
+</header>
+
+<div class="clock-strip" aria-label="当前日期与时间">
+  <div class="clock-date">
+    <span id="liveDate">—</span>
+    <span id="liveWeek">—</span>
+    <span id="liveLunar" class="clock-lunar">—</span>
+  </div>
+  <b class="clock-time" id="liveTime">--:--:--.---</b>
+</div>
+
+<main class="layout">
+  <!-- ============ 参数面板 ============ -->
+  <section class="panel settings" aria-label="参数设置">
+
+    <div class="panel-head">
+      <h2>输入参数</h2>
+      <span class="auto-save">修改后自动保存</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M3 10h18"></path></svg>
+        </span>
+        基本信息
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label for="birthDate">出生日期</label>
+          <span class="hint">用于推算法定退休年龄</span>
+        </div>
+        <input type="date" id="birthDate" />
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label for="workStartDate">参加工作日期</label>
+          <span class="hint">职业生涯的起点</span>
+        </div>
+        <input type="date" id="workStartDate" />
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <span class="label-text" id="genderLabel">原法定退休年龄</span>
+        </div>
+        <div class="segmented" role="group" aria-labelledby="genderLabel" id="genderGroup">
+          <button type="button" data-gender="male">男 60</button>
+          <button type="button" data-gender="female55">女 55</button>
+          <button type="button" data-gender="female50">女 50</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12"></path><path d="M16 13h.01M21 11h-4a2 2 0 0 0 0 4h4"></path></svg>
+        </span>
+        薪资收入
+      </div>
+
+      <div class="field-grid">
+        <div class="field">
+          <div class="field-head">
+            <label for="monthlySalary">月薪</label>
+            <span class="hint">元</span>
+          </div>
+          <input type="number" id="monthlySalary" min="0" max="1000000" step="100" value="15000" />
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <label for="bonusMonths">年度奖金</label>
+            <span class="hint">月薪倍数</span>
+          </div>
+          <input type="number" id="bonusMonths" min="0" max="24" step="0.5" value="0" />
+        </div>
+      </div>
+
+      <div class="leave-summary">
+        <div><span>每小时工资</span><b id="hourlyWage">—</b></div>
+        <div><span>每月计薪工时</span><b id="monthlyHours">—</b></div>
+      </div>
+
+      <p class="field-note">时薪按基本月薪折算，已扣除法定节假日与当前年假；总收入按当前薪资保持不变估算。月薪填税前或到手均可，保持口径统一即可。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V6a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"></path><path d="M14 4v6h6M8 14h8M8 18h5"></path></svg>
+        </span>
+        退休规则
+      </div>
+
+      <div class="field">
+        <div class="segmented wide" role="group" aria-label="退休规则" id="retireModeGroup">
+          <button type="button" data-mode="reform">中国新规</button>
+          <button type="button" data-mode="custom">自定义年龄</button>
+        </div>
+      </div>
+
+      <div class="field" id="customAgeField" hidden>
+        <div class="field-head">
+          <label for="customAge">退休年龄</label>
+          <output id="customAgeOut">60 岁</output>
+        </div>
+        <input type="range" id="customAge" min="45" max="70" step="1" value="60" />
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label for="flexMonths">弹性退休调整</label>
+          <output id="flexOut">不调整</output>
+        </div>
+        <input type="range" id="flexMonths" min="-36" max="36" step="1" value="0" />
+        <p class="field-note" id="flexNote">新规允许最多提前 3 年或延迟 3 年，提前后不低于原法定年龄。</p>
+      </div>
+
+      <div class="rule-summary" id="ruleSummary">
+        <div class="rule-row"><span>基准退休年龄</span><b id="legalAge">—</b></div>
+        <div class="rule-row"><span>实际退休年龄</span><b id="actualAge">—</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+        </span>
+        每日时间分配
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label for="dailyHours">每日工作时长</label>
+          <output id="dailyHoursOut">8 小时</output>
+        </div>
+        <input type="range" id="dailyHours" min="4" max="16" step="0.5" value="8" />
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label for="sleepHours">工作日睡眠时长</label>
+          <output id="sleepHoursOut">8 小时</output>
+        </div>
+        <input type="range" id="sleepHours" min="3" max="12" step="0.5" value="8" />
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label for="restSleepHours">休息日睡眠时长</label>
+          <output id="restSleepHoursOut">9 小时</output>
+        </div>
+        <input type="range" id="restSleepHours" min="3" max="14" step="0.5" value="9" />
+        <p class="field-note">周末、法定节假日与年假等非工作日，按该时长计入睡眠。</p>
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label for="commuteHours">每日通勤时长</label>
+          <output id="commuteHoursOut">1 小时</output>
+        </div>
+        <input type="range" id="commuteHours" min="0" max="4" step="0.5" value="1" />
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label for="workdaysPerWeek">每周工作天数</label>
+          <output id="workdaysOut">5 天</output>
+        </div>
+        <input type="range" id="workdaysPerWeek" min="3" max="7" step="1" value="5" />
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h18"></path></svg>
+        </span>
+        假期规则
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label for="priorYears">入职前累计工龄</label>
+          <span class="hint">年</span>
+        </div>
+        <input type="number" id="priorYears" min="0" max="40" step="0.5" value="0" />
+        <p class="field-note">国家年假按累计工龄自动计算：满 1 年 5 天，满 10 年 10 天，满 20 年 15 天。</p>
+      </div>
+
+      <div class="leave-summary">
+        <div><span>当前国家年假</span><b id="statutoryNow">—</b></div>
+        <div><span>当前企业年假</span><b id="extraNow">—</b></div>
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label for="statutoryHolidays">法定节假日</label>
+          <span class="hint">天 / 年</span>
+        </div>
+        <input type="number" id="statutoryHolidays" min="0" max="40" step="1" value="13" />
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label for="extraLeaveEnabled">额外假期</label>
+          <label class="switch">
+            <input type="checkbox" id="extraLeaveEnabled" />
+            <span class="switch-track" aria-hidden="true"></span>
+            <span class="sr-only">启用额外假期规则</span>
+          </label>
+        </div>
+      </div>
+
+      <div id="extraLeaveFields">
+        <div class="field-grid three">
+          <div class="field">
+            <div class="field-head"><label for="extraInterval">每满年数</label></div>
+            <input type="number" id="extraInterval" min="0.5" max="10" step="0.5" value="1" />
+          </div>
+          <div class="field">
+            <div class="field-head"><label for="extraIncrement">增加天数</label></div>
+            <input type="number" id="extraIncrement" min="0" max="10" step="0.5" value="1" />
+          </div>
+          <div class="field">
+            <div class="field-head"><label for="extraCap">封顶天数</label></div>
+            <input type="number" id="extraCap" min="0" max="40" step="1" value="10" />
+          </div>
+        </div>
+        <p class="field-note">规则：在本企业每满 N 年，额外年假增加 X 天，累计不超过 Y 天。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5l3 2"></path><circle cx="12" cy="12" r="9"></circle></svg>
+        </span>
+        加班定义
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label for="standardHours">加班起算标准</label>
+          <output id="standardHoursOut">每天 8 小时</output>
+        </div>
+        <input type="range" id="standardHours" min="4" max="12" step="0.5" value="8" />
+        <p class="field-note">每日工作时长超过该标准的部分，计入日常加班。</p>
+      </div>
+
+      <div class="field-grid">
+        <div class="field">
+          <div class="field-head">
+            <label for="weekendOTDays">休息日加班</label>
+            <span class="hint">天 / 月</span>
+          </div>
+          <input type="number" id="weekendOTDays" min="0" max="15" step="0.5" value="0" />
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <label for="weekendOTHours">单日加班</label>
+            <span class="hint">小时</span>
+          </div>
+          <input type="number" id="weekendOTHours" min="0" max="16" step="0.5" value="8" />
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label for="otRate">加班折算倍率</label>
+          <output id="otRateOut">1.5 倍</output>
+        </div>
+        <input type="range" id="otRate" min="1" max="3" step="0.1" value="1.5" />
+        <p class="field-note">用于把加班时间折算成「等效工作时长」，便于对比。</p>
+      </div>
+    </div>
+
+    <div class="notice" id="notice" hidden></div>
+  </section>
+
+  <!-- ============ 结果面板 ============ -->
+  <section class="panel results" aria-label="计算结果">
+
+    <div class="hero">
+      <div class="hero-top">
+        <span class="hero-label">预计退休日期</span>
+        <span class="hero-badge" id="ruleBadge">中国渐进式延迟退休</span>
+      </div>
+      <div class="hero-date" id="retireDate">—</div>
+      <div class="hero-sub">
+        <span id="retireAge">—</span>
+        <span class="dot"></span>
+        <span id="careerSpan">—</span>
+      </div>
+
+      <div class="countdown" aria-label="距离退休倒计时">
+        <div class="cd"><b id="cdDays">—</b><span>天</span></div>
+        <div class="cd"><b id="cdHours">—</b><span>时</span></div>
+        <div class="cd"><b id="cdMinutes">—</b><span>分</span></div>
+        <div class="cd"><b id="cdSeconds">—</b><span>秒</span></div>
+      </div>
+
+      <div class="progress-block">
+        <div class="progress-head">
+          <span>职业生涯进度</span>
+          <b id="progressPct">0%</b>
+        </div>
+        <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-foot">
+          <span>参加工作 <b id="startLabel">—</b></span>
+          <span>已工作 <b id="elapsedLabel">—</b></span>
+          <span>退休 <b id="retireLabel">—</b></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <article class="stat" data-tone="work">
+        <div class="stat-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"></path></svg>
+        </div>
+        <div class="stat-label">总工作时长</div>
+        <div class="stat-value" id="statWork">—</div>
+        <div class="stat-sub" id="statWorkSub">—</div>
+      </article>
+
+      <article class="stat" data-tone="sleep">
+        <div class="stat-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"></path></svg>
+        </div>
+        <div class="stat-label">总睡眠时长</div>
+        <div class="stat-value" id="statSleep">—</div>
+        <div class="stat-sub" id="statSleepSub">—</div>
+      </article>
+
+      <article class="stat" data-tone="vacation">
+        <div class="stat-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18M5 18V8l4 2 3-6 3 6 4-2v10"></path></svg>
+        </div>
+        <div class="stat-label">总放假时长</div>
+        <div class="stat-value" id="statVacation">—</div>
+        <div class="stat-sub" id="statVacationSub">—</div>
+      </article>
+
+      <article class="stat accent" data-tone="free">
+        <div class="stat-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </div>
+        <div class="stat-label">剩余自由时间</div>
+        <div class="stat-value" id="statFree">—</div>
+        <div class="stat-sub" id="statFreeSub">—</div>
+      </article>
+    </div>
+
+    <div class="chart-card income-card">
+      <div class="chart-head">
+        <h3>收入概览</h3>
+        <span class="chart-hint">按当前薪资保持不变估算</span>
+      </div>
+      <div class="income-grid">
+        <div class="income-item">
+          <span>每小时工资</span>
+          <b id="incomeHourly">—</b>
+          <small id="incomeHourlyNote">—</small>
+        </div>
+        <div class="income-item">
+          <span>职业生涯总收入</span>
+          <b id="incomeTotal">—</b>
+          <small id="incomeTotalNote">—</small>
+        </div>
+        <div class="income-item">
+          <span>剩余可赚收入</span>
+          <b id="incomeRemain">—</b>
+          <small id="incomeRemainNote">—</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="tool-grid">
+      <a class="tool-card tool-work" href="/work.html">
+        <span class="tool-eyebrow">WORK ENCOURAGER</span>
+        <h3>上班鼓励器</h3>
+        <p>实时看到今天已经赚到的钱，以及本周、本月的进度。</p>
+        <span class="tool-action">
+          打开
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6"></path>
+          </svg>
+        </span>
+      </a>
+      <a class="tool-card tool-ledger" href="/ledger.html">
+        <span class="tool-eyebrow">PURCHASE LEDGER</span>
+        <h3>购买账本</h3>
+        <p>把想买的东西换算成需要工作的时间，看看每一笔消费值多少个小时。</p>
+        <span class="tool-action">
+          打开
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6"></path>
+          </svg>
+        </span>
+      </a>
+    </div>
+
+    <div class="charts">
+      <div class="chart-card">
+        <div class="chart-head">
+          <h3>职业生涯时间构成</h3>
+          <span class="chart-hint">扣除睡眠与工作后的真实余量</span>
+        </div>
+        <div class="donut-wrap">
+          <div class="donut" id="donut" role="img" aria-label="职业生涯时间构成环形图">
+            <div class="donut-hole">
+              <b id="donutCenter">—</b>
+              <span>职业总时长</span>
+            </div>
+          </div>
+          <ul class="legend" id="legend">
+            <li data-key="work"><i></i><span>工作</span><b id="legendWork">—</b></li>
+            <li data-key="sleep"><i></i><span>睡眠</span><b id="legendSleep">—</b></li>
+            <li data-key="commute"><i></i><span>通勤</span><b id="legendCommute">—</b></li>
+            <li data-key="free"><i></i><span>自由</span><b id="legendFree">—</b></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-head">
+          <h3>每天 24 小时怎么分配</h3>
+          <span class="chart-hint" id="dailyHint">—</span>
+        </div>
+        <div class="day-profile">
+          <div class="day-profile-head"><span>工作日</span><b id="workdayFreeLabel">—</b></div>
+          <div class="day-bar" aria-hidden="true">
+            <span class="seg work" id="segWork"></span>
+            <span class="seg commute" id="segCommute"></span>
+            <span class="seg sleep" id="segSleep"></span>
+            <span class="seg free" id="segFree"></span>
+          </div>
+          <div class="day-legend">
+            <div><i class="dot work"></i>工作 <b id="dayWork">—</b></div>
+            <div><i class="dot commute"></i>通勤 <b id="dayCommute">—</b></div>
+            <div><i class="dot sleep"></i>睡眠 <b id="daySleep">—</b></div>
+            <div><i class="dot free"></i>自由 <b id="dayFree">—</b></div>
+          </div>
+        </div>
+
+        <div class="day-profile">
+          <div class="day-profile-head"><span>休息日</span><b id="restdayFreeLabel">—</b></div>
+          <div class="day-bar" aria-hidden="true">
+            <span class="seg sleep" id="segRestSleep"></span>
+            <span class="seg free" id="segRestFree"></span>
+          </div>
+          <div class="day-legend two">
+            <div><i class="dot sleep"></i>睡眠 <b id="restSleep">—</b></div>
+            <div><i class="dot free"></i>自由 <b id="restFree">—</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card details">
+      <div class="chart-head">
+        <h3>时间账本明细</h3>
+        <span class="chart-hint">按当前参数推算，四舍五入</span>
+      </div>
+      <dl class="detail-grid">
+        <div><dt>职业生涯总跨度</dt><dd id="dTotal">—</dd></div>
+        <div><dt>已经工作</dt><dd id="dElapsed">—</dd></div>
+        <div><dt>距离退休</dt><dd id="dRemain">—</dd></div>
+        <div><dt>已付出工作时长</dt><dd id="dElapsedWork">—</dd></div>
+        <div><dt>剩余工作时长</dt><dd id="dRemainWork">—</dd></div>
+        <div><dt>累计工作日</dt><dd id="dWorkdays">—</dd></div>
+        <div><dt>累计休息日</dt><dd id="dVacation">—</dd></div>
+        <div><dt>其中周末</dt><dd id="dWeekend">—</dd></div>
+        <div><dt>其中法定节假日</dt><dd id="dHoliday">—</dd></div>
+        <div><dt>国家法定年假</dt><dd id="dStatutoryLeave">—</dd></div>
+        <div><dt>企业额外年假</dt><dd id="dExtraLeave">—</dd></div>
+        <div><dt>日常加班</dt><dd id="dWeekdayOT">—</dd></div>
+        <div><dt>休息日加班</dt><dd id="dWeekendOT">—</dd></div>
+        <div><dt>加班合计（折算）</dt><dd id="dOTOfficial">—</dd></div>
+        <div><dt>总通勤时长</dt><dd id="dCommute">—</dd></div>
+      </dl>
+    </div>
+
+    <p class="assumptions">
+      计算口径：国家年假按《职工带薪年休假条例》以累计工龄自动折算（满 1 年 5 天、满 10 年 10 天、满 20 年 15 天），企业额外年假按设定规则逐年递增并封顶；休息日睡眠单独计算。未考虑具体年份的调休安排，退休日期按中国渐进式延迟退休规则（2025 年起施行）或自定义年龄推算。收入与时薪按当前薪资恒定估算，未考虑涨薪、税费与通胀；账本换算仅用于建立时间感知。结果仅供个人规划参考。
+    </p>
+  </section>
+</main>
+
+<footer class="footer">
+  <span>LifeClock · 数据仅保存在本地浏览器</span>
+  <span id="footerClock">—</span>
+</footer>
+
+<script src="app.js?v=5"></script>
+</body>
+</html>

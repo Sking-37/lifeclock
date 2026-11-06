@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>上班鼓励器 · LifeClock</title>
+<meta name="description" content="实时看到今天已经赚到的钱，以及本周、本月的工作进度和累积收入。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css?v=6" />
+<link rel="stylesheet" href="work.css?v=1" />
+</head>
+<body class="work-page">
+<div class="ambient" aria-hidden="true"></div>
+
+<header class="work-nav">
+  <a class="brand" href="/" aria-label="返回 LifeClock 计算器">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 7v5l3.5 2"></path>
+      </svg>
+    </span>
+    <span class="brand-text">
+      <span class="brand-name">LifeClock</span>
+      <span class="brand-sub">WORK ENCOURAGER</span>
+    </span>
+  </a>
+
+  <div class="nav-right">
+    <a class="nav-back nav-ledger-link" href="/ledger.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path>
+        <path d="M9 8h6M9 12h6"></path>
+      </svg>
+      购买账本
+    </a>
+    <a class="nav-back" href="/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M11 6l-6 6 6 6"></path>
+      </svg>
+      返回计算器
+    </a>
+  </div>
+</header>
+
+<main class="work-shell">
+
+  <div class="work-warning" id="workWarning" hidden>
+    还没有设置月薪，收入暂时显示为 0。先回到计算器填写月薪，这里就能实时计算。
+    <a href="/">去设置月薪</a>
+  </div>
+
+  <section class="work-hero" aria-labelledby="workTitle">
+    <div class="hero-copy">
+      <span class="eyebrow">LIVE EARNINGS / 上班鼓励器</span>
+      <h1 id="workTitle">今天也在<br /><span>为自己打工。</span></h1>
+      <p>把时间换成看得见的收入。每一秒，都在为自己的生活加一点筹码。</p>
+    </div>
+    <div class="hero-clock">
+      <span class="clock-date" id="todayDate">—</span>
+      <b class="clock-time" id="liveClock">--:--:--</b>
+      <span class="clock-schedule" id="scheduleLine">—</span>
+    </div>
+  </section>
+
+  <section class="earn-board" aria-labelledby="todayEarnLabel">
+    <div class="board-head">
+      <span class="status-pill is-working" id="workStatus"><i aria-hidden="true"></i><span id="statusText">上班中</span></span>
+      <span class="board-date" id="boardDate">—</span>
+    </div>
+
+    <div class="board-label" id="todayEarnLabel">今日已赚</div>
+    <div class="today-amount"><span class="currency" aria-hidden="true">¥</span><b id="todayAmount">0.0000</b></div>
+    <div class="speed-line">当前赚钱速度：<b id="speedValue">¥ 0.0000</b><span class="speed-unit">/ 秒</span></div>
+
+    <div class="progress-block">
+      <div class="progress-head"><span>今日工时进度</span><b id="todayPct">0%</b></div>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="todayBarTrack">
+        <i id="todayBar"></i>
+      </div>
+      <div class="progress-foot">
+        <span id="todayHours">已工作 0.00 / 8.00 小时</span>
+        <span id="todayHint">—</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="period-grid">
+    <article class="period-card">
+      <div class="period-head"><h2>本周</h2><span id="weekRange">—</span></div>
+      <div class="period-label">本周已赚</div>
+      <div class="period-amount"><span aria-hidden="true">¥</span><b id="weekAmount">0.0000</b></div>
+      <div class="progress-block">
+        <div class="progress-head"><span>周度进度</span><b id="weekPct">0%</b></div>
+        <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="weekBarTrack">
+          <i id="weekBar"></i>
+        </div>
+        <div class="progress-foot">
+          <span id="weekHours">—</span>
+          <span id="weekHint">—</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="period-card">
+      <div class="period-head"><h2>本月</h2><span id="monthRange">—</span></div>
+      <div class="period-label">本月已赚</div>
+      <div class="period-amount"><span aria-hidden="true">¥</span><b id="monthAmount">0.0000</b></div>
+      <div class="progress-block">
+        <div class="progress-head"><span>月度进度</span><b id="monthPct">0%</b></div>
+        <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="monthBarTrack">
+          <i id="monthBar"></i>
+        </div>
+        <div class="progress-foot">
+          <span id="monthHours">—</span>
+          <span id="monthHint">—</span>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="schedule-panel" aria-labelledby="scheduleTitle">
+    <div class="schedule-head">
+      <div>
+        <h2 id="scheduleTitle">作息设置</h2>
+        <p>调整上班时间与工作日，页面会立即按新设置计算。</p>
+      </div>
+      <span class="save-badge">自动保存</span>
+    </div>
+
+    <div class="schedule-grid">
+      <label class="time-field">
+        <span>上班时间</span>
+        <input type="time" id="startTime" />
+      </label>
+
+      <div class="weekday-field">
+        <span class="field-label">工作日</span>
+        <div class="weekday-toggles" id="weekdayToggles" role="group" aria-label="选择工作日">
+          <button type="button" data-day="1">一</button>
+          <button type="button" data-day="2">二</button>
+          <button type="button" data-day="3">三</button>
+          <button type="button" data-day="4">四</button>
+          <button type="button" data-day="5">五</button>
+          <button type="button" data-day="6">六</button>
+          <button type="button" data-day="0">日</button>
+        </div>
+      </div>
+
+      <div class="rate-info">
+        <span>当前时薪</span>
+        <b id="miniRate">—</b>
+        <small id="miniDaily">每日 — 小时</small>
+      </div>
+
+      <a class="rate-link" href="/">修改薪资与工时 →</a>
+    </div>
+
+    <p class="schedule-note">按设定的上班时间连续计时，休息日不计收入。周度与月度收入按所选工作日推算，暂未单独扣除法定节假日。</p>
+  </section>
+
+</main>
+
+<footer class="work-footer">
+  <span>LifeClock · 上班鼓励器</span>
+  <span>数据仅保存在本地浏览器</span>
+</footer>
+
+<script src="work.js?v=1"></script>
+</body>
+</html>

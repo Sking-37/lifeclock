@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>购买账本 · LifeClock</title>
+<meta name="description" content="把想买的东西换算成需要工作的时间。按你的时薪，看看每一笔消费值多少个小时。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css?v=6" />
+<link rel="stylesheet" href="ledger.css?v=3" />
+</head>
+<body class="ledger-page">
+<div class="ambient" aria-hidden="true"></div>
+
+<header class="ledger-nav">
+  <a class="brand" href="/" aria-label="返回 LifeClock 计算器">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 7v5l3.5 2"></path>
+      </svg>
+    </span>
+    <span class="brand-text">
+      <span class="brand-name">LifeClock</span>
+      <span class="brand-sub">PURCHASE LEDGER</span>
+    </span>
+  </a>
+
+  <div class="nav-right">
+    <div class="ledger-clock" aria-label="当前时间">
+      <span id="navDate">—</span>
+      <b id="navTime">--:--:--.---</b>
+    </div>
+    <a class="nav-back" href="/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M11 6l-6 6 6 6"></path>
+      </svg>
+      返回计算器
+    </a>
+  </div>
+</header>
+
+<main class="ledger-shell">
+
+  <section class="ledger-hero" aria-labelledby="ledgerTitle">
+    <div class="hero-copy">
+      <span class="eyebrow">WORK × MONEY / 购买账本</span>
+      <h1 id="ledgerTitle">每件想买的东西，<br /><span>都标好了工作的时间。</span></h1>
+      <p class="hero-sub">按你当前的时薪，把价格换算成需要付出的工时。买之前，先看看它值多少个小时。</p>
+
+      <div class="rate-pill">
+        <span class="rate-label">当前时薪</span>
+        <b id="rateValue">—</b>
+        <a href="/">修改薪资</a>
+      </div>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hstat">
+        <span>累计支出</span>
+        <b id="totalSpent">¥ 0</b>
+        <small id="totalSpentSub">还没有记录</small>
+      </div>
+      <div class="hstat">
+        <span>折合工作</span>
+        <b id="totalHours">0 小时</b>
+        <small id="totalDaysSub">≈ 0 个工作日</small>
+      </div>
+      <div class="hstat">
+        <span>月薪占比</span>
+        <b id="salaryShare">—</b>
+        <small id="salaryShareSub">按月薪计算</small>
+      </div>
+      <div class="hstat accent">
+        <span>最贵的一件</span>
+        <b id="topItem">—</b>
+        <small id="topItemSub">—</small>
+      </div>
+    </div>
+  </section>
+
+  <div class="rate-warning" id="rateWarning" hidden>
+    还没有可用的时薪，账本暂时只能记录金额。先回到计算器填写月薪，这里就能换算工作时长。
+    <a href="/">去设置月薪</a>
+  </div>
+
+  <section class="ledger-body">
+    <aside class="ledger-side" aria-label="记一笔与换算基准">
+
+      <div class="panel form-panel">
+        <div class="panel-head">
+          <h2>记一笔</h2>
+          <span class="panel-eyebrow">NEW ENTRY</span>
+        </div>
+
+        <form id="ledgerForm" autocomplete="off">
+          <div class="field">
+            <label for="itemName">物品内容</label>
+            <input type="text" id="itemName" placeholder="例如：相机、一次旅行" maxlength="40" />
+          </div>
+
+          <div class="field">
+            <label for="itemAmount">金额</label>
+            <div class="money-input">
+              <span aria-hidden="true">¥</span>
+              <input type="number" id="itemAmount" placeholder="0.00" min="0.01" max="100000000" step="0.01" inputmode="decimal" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="itemDate">购买时间</label>
+            <input type="datetime-local" id="itemDate" />
+          </div>
+
+          <div class="field">
+            <span class="field-label">分类</span>
+            <div class="cat-picker" id="catPicker" role="group" aria-label="选择分类">
+              <button type="button" data-cat="数码" class="active"><i></i>数码</button>
+              <button type="button" data-cat="家居"><i></i>家居</button>
+              <button type="button" data-cat="出行"><i></i>出行</button>
+              <button type="button" data-cat="体验"><i></i>体验</button>
+              <button type="button" data-cat="其他"><i></i>其他</button>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn">
+            加入账本
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6"></path>
+            </svg>
+          </button>
+        </form>
+
+        <p class="form-tip">金额会按当前时薪自动换算成工作时长。</p>
+      </div>
+
+      <div class="panel rate-panel">
+        <div class="panel-head">
+          <h2>换算基准</h2>
+          <span class="panel-eyebrow">RATE</span>
+        </div>
+        <dl class="rate-list">
+          <div><dt>月薪</dt><dd id="baseSalary">—</dd></div>
+          <div><dt>每月计薪工时</dt><dd id="baseMonthlyHours">—</dd></div>
+          <div><dt>每日工作时长</dt><dd id="baseDailyHours">—</dd></div>
+          <div class="highlight"><dt>每小时工资</dt><dd id="baseRate">—</dd></div>
+        </dl>
+        <p class="rate-note">时薪来自计算器的薪资、假期与工时设置。修改后回到本页会自动同步。</p>
+        <a class="rate-link" href="/">去计算器调整薪资 →</a>
+      </div>
+
+    </aside>
+
+    <section class="panel list-panel" aria-labelledby="listTitle">
+      <div class="list-head">
+        <div>
+          <h2 id="listTitle">账本记录</h2>
+          <span class="list-meta" id="listMeta">共 0 件</span>
+        </div>
+        <div class="list-tools">
+          <div class="filter-chips" id="filterChips" role="group" aria-label="按分类筛选">
+            <button type="button" data-filter="全部" class="active">全部</button>
+            <button type="button" data-filter="数码">数码</button>
+            <button type="button" data-filter="家居">家居</button>
+            <button type="button" data-filter="出行">出行</button>
+            <button type="button" data-filter="体验">体验</button>
+            <button type="button" data-filter="其他">其他</button>
+          </div>
+          <label class="sort-control">
+            <span>排序</span>
+            <select id="sortSelect">
+              <option value="newest">时间最新</option>
+              <option value="oldest">时间最早</option>
+              <option value="amount-desc">金额从高到低</option>
+              <option value="amount-asc">金额从低到高</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <ul class="entry-list" id="entryList"></ul>
+    </section>
+  </section>
+
+  <section class="ledger-quote" aria-hidden="true">
+    <span class="quote-mark">“</span>
+    <p>价格是标签，时间是代价。</p>
+    <span class="quote-source">LIFECLOCK / WORK × MONEY</span>
+  </section>
+
+  <section class="panel stats-panel" aria-labelledby="statsTitle">
+    <div class="stats-head">
+      <div>
+        <h2 id="statsTitle">周期统计</h2>
+        <span class="stats-sub" id="statsRange">—</span>
+      </div>
+      <div class="stats-controls">
+        <div class="period-nav" id="periodNav">
+          <button type="button" id="periodPrev" aria-label="上一个周期">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+          </button>
+          <button type="button" id="periodNext" aria-label="下一个周期">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+          </button>
+        </div>
+        <div class="period-tabs" id="periodTabs" role="group" aria-label="统计周期">
+          <button type="button" data-period="week">周度</button>
+          <button type="button" data-period="month" class="active">月度</button>
+          <button type="button" data-period="year">年度</button>
+          <button type="button" data-period="all">全部</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="stats-note">统计按购买时间归集，下方消费结构与排行会跟随所选周期；账本列表始终显示全部记录。</p>
+
+    <div class="stats-kpis">
+      <div class="kpi">
+        <span>周期支出</span>
+        <b id="periodSpent">¥ 0</b>
+        <small id="periodSpentSub">0 件物品</small>
+      </div>
+      <div class="kpi">
+        <span>折合工作</span>
+        <b id="periodHours">0 小时</b>
+        <small id="periodHoursSub">≈ 0 个工作日</small>
+      </div>
+      <div class="kpi">
+        <span>日均支出</span>
+        <b id="periodDaily">—</b>
+        <small id="periodDailySub">—</small>
+      </div>
+      <div class="kpi accent">
+        <span>最大单笔</span>
+        <b id="periodTop">—</b>
+        <small id="periodTopSub">—</small>
+      </div>
+    </div>
+
+    <div class="trend-block">
+      <div class="trend-head">
+        <span id="trendTitle">月度支出</span>
+        <span class="trend-unit">单位：元</span>
+      </div>
+      <div class="trend-chart" id="trendChart"></div>
+    </div>
+  </section>
+
+  <section class="ledger-charts">
+    <div class="panel chart-panel">
+      <div class="panel-head">
+        <h2>消费结构</h2>
+        <span class="panel-eyebrow" id="categoryPeriodLabel">月度 / BY CATEGORY</span>
+      </div>
+      <div class="category-wrap">
+        <div class="cat-donut" id="catDonut">
+          <div class="cat-hole">
+            <b id="catCenter">0</b>
+            <span>件物品</span>
+          </div>
+        </div>
+        <ul class="cat-legend" id="catLegend"></ul>
+      </div>
+    </div>
+
+    <div class="panel chart-panel">
+      <div class="panel-head">
+        <h2>工作最久的三件</h2>
+        <span class="panel-eyebrow" id="rankingPeriodLabel">月度 / WORK RANKING</span>
+      </div>
+      <ol class="rank-list" id="rankList"></ol>
+    </div>
+  </section>
+
+</main>
+
+<footer class="ledger-footer">
+  <span>LifeClock · 购买账本</span>
+  <span>数据仅保存在本地浏览器</span>
+</footer>
+
+<script src="ledger.js?v=2"></script>
+</body>
+</html>
